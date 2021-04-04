@@ -11,6 +11,7 @@ import os
 import requests
 import psutil 
 import pyautogui as pg
+import sys
 
 listener= sr.Recognizer()
 engine= pyttsx3.init()
@@ -24,23 +25,21 @@ def talk(text):
     engine.say(text)
     engine.runAndWait()
     
-def take_command(wa=False,numero=False):
+def take_command(wa=False):
         with sr.Microphone() as source:
             print("Sto ascoltando...")
             if wa:
                 voice= listener.record(source,duration=6)
                 command= listener.recognize_google(voice, language="it-IT")
                 command= command.lower()
-                if numero:
-                    command = command.replace(" ","")
             else:
-                voice= listener.record(source,duration=4)
+                voice= listener.record(source,duration=3)
                 command= listener.recognize_google(voice, language="it-IT")
                 command= command.lower()
             if 'lucy' in command:
-                command = command.replace('lucy', '')
+                command = command.replace('lucy','')
         return command
-
+    
 def get_weather(city):
     weather_key= "768f0e227a4f91db43e5ed9d29f1499b"
     url= "http://api.openweathermap.org/data/2.5/weather"
@@ -85,8 +84,7 @@ def run_lucy():
         talk("Quale canzone?")
         song=take_command()
         talk(song)
-        print(song)
-        pywhatkit.playonyt(song)
+        pywhatkit.playonyt("song")
     elif "meteo" in command:
         talk("Quale città?")
         città=take_command()
@@ -107,9 +105,8 @@ def run_lucy():
         now=datetime.datetime.now().time()
         talk("Cosa vuoi scrivere?")
         mess=take_command(wa=True)
-        talk("A che numero?")
-        num=take_command(wa=True,numero=True)
-        print("Numero del destinatario:" + num)
+        talk("Non sono molto brava a capire i numeri, inseriscilo dalla tastiera")
+        num= input("Scrivi il numero qui: ")
         pywhatkit.sendwhatmsg("+39" + num, mess, int(now.hour), int(now.minute)+2)
         width,height = pg.size()
         pg.click(width/2,height/2)
@@ -159,6 +156,9 @@ def run_lucy():
         orario_x= datetime.datetime.strptime(orario, " %H:%M").time()
         print(orario_x)
         sveglia(orario_x)
+    elif "chiuditi" in command:
+        talk("Ok , ciao")
+        sys.exit(0)
     elif "ciao " or "buonasera" or "buondì" in command:
         talk("Ciao, dimmi")
         run_lucy()
