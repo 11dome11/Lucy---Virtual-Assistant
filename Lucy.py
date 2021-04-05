@@ -12,6 +12,8 @@ import requests
 import psutil 
 import pyautogui as pg
 import sys
+from feel_it import EmotionClassifier
+from google_trans_new import google_translator
 
 listener= sr.Recognizer()
 engine= pyttsx3.init()
@@ -29,7 +31,7 @@ def take_command(wa=False):
         with sr.Microphone() as source:
             print("Sto ascoltando...")
             if wa:
-                voice= listener.record(source,duration=6)
+                voice= listener.record(source,duration=5)
                 command= listener.recognize_google(voice, language="it-IT")
                 command= command.lower()
             else:
@@ -39,6 +41,17 @@ def take_command(wa=False):
             if 'lucy' in command:
                 command = command.replace('lucy','')
         return command
+    
+def emotions(text):
+    emo=text
+    emoclass= EmotionClassifier()
+    pred= emoclass.predict([emo])
+    sens=pred[0]
+    translator= google_translator()
+    trad= translator.translate(sens, lang_src="en", lang_tgt="it")
+    print(trad)
+    final= "Credo tu stia provando" + trad
+    return final
     
 def get_weather(city):
     weather_key= "768f0e227a4f91db43e5ed9d29f1499b"
@@ -79,7 +92,7 @@ def sveglia(text):
 #MAIN
 def run_lucy():
     command= take_command()
-    print("Hai detto:" +command)
+    print("Hai detto: "+command)
     if "una canzone" in command:
         talk("Quale canzone?")
         song=take_command()
@@ -105,7 +118,7 @@ def run_lucy():
         now=datetime.datetime.now().time()
         talk("Cosa vuoi scrivere?")
         mess=take_command(wa=True)
-        talk("Non sono molto brava a capire i numeri, inseriscilo dalla tastiera")
+        talk("Non sono molto brava con i numeri, inserisci il numero del destinatario dalla tastiera")
         num= input("Scrivi il numero qui: ")
         pywhatkit.sendwhatmsg("+39" + num, mess, int(now.hour), int(now.minute)+2)
         width,height = pg.size()
@@ -156,10 +169,15 @@ def run_lucy():
         orario_x= datetime.datetime.strptime(orario, " %H:%M").time()
         print(orario_x)
         sveglia(orario_x)
+    elif "emozioni" in command:
+        talk("Ok , proviamo")
+        emoz=take_command()
+        respon=emotions(emoz)
+        talk(respon)
     elif "chiuditi" in command:
         talk("Ok , ciao")
         sys.exit(0)
-    elif "ciao " or "buonasera" or "buondì" in command:
+    elif "ciao" in command:
         talk("Ciao, dimmi")
         run_lucy()
     else:
