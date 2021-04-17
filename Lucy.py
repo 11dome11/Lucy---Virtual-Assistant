@@ -2,7 +2,6 @@ import speech_recognition as sr
 import pyttsx3
 import pywhatkit
 import wikipedia
-import pyjokes
 import datetime 
 import webbrowser
 import subprocess
@@ -14,6 +13,8 @@ import pyautogui as pg
 import sys
 from feel_it import EmotionClassifier
 from google_trans_new import google_translator
+import re
+import urllib.request
 
 listener= sr.Recognizer()
 engine= pyttsx3.init()
@@ -31,11 +32,11 @@ def take_command(wa=False):
         with sr.Microphone() as source:
             print("Sto ascoltando...")
             if wa:
-                voice= listener.record(source,duration=5)
+                voice= listener.record(source,duration=6)
                 command= listener.recognize_google(voice, language="it-IT")
                 command= command.lower()
             else:
-                voice= listener.record(source,duration=3)
+                voice= listener.record(source,duration=4)
                 command= listener.recognize_google(voice, language="it-IT")
                 command= command.lower()
             if 'lucy' in command:
@@ -97,7 +98,10 @@ def run_lucy():
         talk("Quale canzone?")
         song=take_command()
         talk(song)
-        pywhatkit.playonyt("song")
+        song = song.replace(' ','+')
+        html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + song)
+        video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+        webbrowser.get().open("https://www.youtube.com/watch?v=" + video_ids[0])
     elif "meteo" in command:
         talk("Quale città?")
         città=take_command()
@@ -118,7 +122,7 @@ def run_lucy():
         now=datetime.datetime.now().time()
         talk("Cosa vuoi scrivere?")
         mess=take_command(wa=True)
-        talk("Non sono molto brava con i numeri, inserisci il numero del destinatario dalla tastiera")
+        talk("Non sono molto brava nel riconoscere i numeri, inserisci il numero del destinatario dalla tastiera")
         num= input("Scrivi il numero qui: ")
         pywhatkit.sendwhatmsg("+39" + num, mess, int(now.hour), int(now.minute)+2)
         width,height = pg.size()
@@ -134,8 +138,6 @@ def run_lucy():
         thing= command.replace("che cos'è","")
         info2= wikipedia.summary(thing,2)
         talk(info2)
-    elif "jokes" in command:
-        talk(pyjokes.get_joke())
     elif "ore" in command:
         time= datetime.datetime.now().strftime('%H:%M') 
         print(time)
@@ -162,7 +164,7 @@ def run_lucy():
         note(nota)
     elif "apri google chrome" in command:
         subprocess.Popen(['C:\Program Files (x86)\Google\Chrome\Application\chrome.exe', '-new-tab'])
-    elif "imposta una sveglia" in command:
+    elif "una sveglia" in command:
         talk('A che ora?')
         orario=take_command()
         orario = orario.replace('alle', '')
