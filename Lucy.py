@@ -186,8 +186,6 @@ def run_lucy():
         mess=take_command(wam=True)
         talk("dimmi il numero")
         num= take_command(wan=True)
-        print(type(num))
-        print(num)
         pywhatkit.sendwhatmsg("+39" + num, mess, int(now.hour), int(now.minute)+2)
         width,height = pg.size()
         pg.click(width/2,height/2)
